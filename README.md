@@ -142,8 +142,8 @@ Approximately **52 hours** total.
 
 ## Author
 -   **Mapelujo Abdulkareem**
-    -   LinkedIn: [Your LinkedIn Profile](https://www.linkedin.com/in/lancer18)
-    -   X (formerly Twitter): [Your X Profile](https://x.com/Lansa_18)
+    -   [LinkedIn Profile](https://www.linkedin.com/in/lancer18)
+    -   [X (formerly Twitter) Profile](https://x.com/Lansa_18)
 
 ---
 
