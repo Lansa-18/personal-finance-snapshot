@@ -14,10 +14,10 @@ export default function ProgressBar({
   const isWarning = pct >= 75 && pct < 100;
 
   const barColor = overBudget
-    ? "#ef4444" // red
+    ? "#ef4444"
     : isWarning
-      ? "#f59e0b" // amber
-      : (color ?? "#22c55e"); // green or category color
+      ? "#f59e0b"
+      : (color ?? "#22c55e");
 
   return (
     <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">

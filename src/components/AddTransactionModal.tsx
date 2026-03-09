@@ -3,6 +3,7 @@ import type { TransactionType, Category, ExpenseCategory } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/constants/categories";
 import { useStore } from "@/store/useStore";
 import Toast from "@/components/Toast";
+import { formatCurrency } from "@/lib/utils";
 
 interface AddTransactionModalProps {
   isOpen: boolean;
@@ -42,7 +43,6 @@ export default function AddTransactionModal({
       date,
     });
 
-    // Check budget overspend for expenses
     if (type === "expense") {
       const budget = budgets.find(
         (b) => b.category === finalCategory && b.month === month,
@@ -59,13 +59,12 @@ export default function AddTransactionModal({
 
         if (currentSpend + numAmount > budget.limit) {
           setToast(
-            `Over budget! ${finalCategory} spending ($${(currentSpend + numAmount).toFixed(0)}) exceeds your $${budget.limit} limit.`,
+            `Over budget! ${finalCategory} spending (${formatCurrency(currentSpend + numAmount)}) exceeds your ${formatCurrency(budget.limit)} limit.`,
           );
         }
       }
     }
 
-    // Reset form & close
     setAmount("");
     setDescription("");
     setType("expense");
@@ -82,7 +81,7 @@ export default function AddTransactionModal({
 
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 z-50 animate-fade-in"
+        className="fixed inset-0 h-full bg-black/40 z-50 animate-fade-in"
         onClick={onClose}
       />
 
@@ -153,7 +152,7 @@ export default function AddTransactionModal({
             {/* Amount */}
             <div>
               <label className="block text-sm font-medium text-text-secondary mb-2">
-                Amount ($)
+                Amount (₦)
               </label>
               <input
                 type="number"

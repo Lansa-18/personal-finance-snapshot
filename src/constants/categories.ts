@@ -10,11 +10,11 @@ export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
 export const ALL_CATEGORIES: Category[] = [...EXPENSE_CATEGORIES, "Income"];
 
 export const CATEGORY_COLORS: Record<Category, string> = {
-  Housing: "#6366f1", // indigo-500
-  Food: "#f59e0b", // amber-500
-  Transport: "#0ea5e9", // sky-500
-  Entertainment: "#f43f5e", // rose-500
-  Income: "#10b981", // emerald-500
+  Housing: "#6366f1",
+  Food: "#f59e0b",
+  Transport: "#0ea5e9",
+  Entertainment: "#f43f5e",
+  Income: "#10b981",
 };
 
 export const CATEGORY_BG_COLORS: Record<Category, string> = {

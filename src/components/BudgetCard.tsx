@@ -84,7 +84,6 @@ export default function BudgetCard({
       </div>
 
       {noBudget ? (
-        // No budget state
         <div className="text-center py-4">
           <p className="text-sm text-text-muted mb-3">
             No budget set for this category

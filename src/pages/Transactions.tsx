@@ -27,7 +27,11 @@ export default function Transactions() {
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [transactions, filterCategory, filterType, filterMonth]);
 
-  const handleDelete = (id: string) => deleteTransaction(id);
+  const handleDelete = (id: string) => {
+    if (window.confirm("Delete this transaction? This cannot be undone.")) {
+      deleteTransaction(id);
+    }
+  };
 
   const isEmpty = transactions.length === 0;
 

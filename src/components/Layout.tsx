@@ -67,10 +67,10 @@ export default function Layout() {
         {/* Logo */}
         <div className="px-6 py-6 border-b border-border">
           <h1 className="text-xl font-bold tracking-tight">
-            <span className="text-income">Fin</span>Track
+            <span className="text-income">Fin</span>Shot
           </h1>
           <p className="text-xs text-text-muted mt-0.5">
-            Personal Finance Tracker
+            Personal Finance Snapshot
           </p>
         </div>
 

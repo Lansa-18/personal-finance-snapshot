@@ -27,6 +27,7 @@ import {
   formatCurrency,
   getMonthOptions,
 } from "@/lib/utils";
+import { Link } from "react-router-dom";
 import AddTransactionModal from "@/components/AddTransactionModal";
 import EmptyState from "@/components/EmptyState";
 import type { Category } from "@/types";
@@ -36,7 +37,6 @@ export default function Dashboard() {
   const [selectedMonth, setSelectedMonth] = useState(currentMonth());
   const [modalOpen, setModalOpen] = useState(false);
 
-  // ── Monthly aggregates ──
   const monthlyData = useMemo(() => {
     const filtered = transactions.filter((t) =>
       t.date.startsWith(selectedMonth),
@@ -83,12 +83,13 @@ export default function Dashboard() {
     })).filter((d) => d.value > 0);
   }, [transactions, selectedMonth]);
 
-  // ── Recent transactions ──
+  // ── Recent transactions (filtered by selected month) ──
   const recentTransactions = useMemo(() => {
     return [...transactions]
+      .filter((t) => t.date.startsWith(selectedMonth))
       .sort((a, b) => b.date.localeCompare(a.date))
       .slice(0, 5);
-  }, [transactions]);
+  }, [transactions, selectedMonth]);
 
   const summaryCards = [
     {
@@ -240,6 +241,9 @@ export default function Dashboard() {
                       formatCurrency(value ?? 0)
                     }
                   />
+                  <Legend
+                    wrapperStyle={{ fontSize: "12px", paddingTop: "8px" }}
+                  />
                   <Area
                     type="monotone"
                     dataKey="Income"
@@ -314,13 +318,23 @@ export default function Dashboard() {
 
           {/* Recent transactions */}
           <div className="bg-surface rounded-xl border border-border">
-            <div className="px-5 py-4 border-b border-border">
+            <div className="px-5 py-4 border-b border-border flex items-center justify-between">
               <h3 className="text-sm font-semibold text-text-primary">
                 Recent Transactions
               </h3>
+              <Link
+                to="/transactions"
+                className="text-xs text-income hover:underline font-medium"
+              >
+                View all →
+              </Link>
             </div>
             <div className="divide-y divide-border">
-              {recentTransactions.map((t) => (
+              {recentTransactions.length === 0 ? (
+                <div className="px-5 py-8 text-center text-sm text-text-muted">
+                  No transactions this month.
+                </div>
+              ) : recentTransactions.map((t) => (
                 <div
                   key={t.id}
                   className="flex items-center justify-between px-5 py-3.5 hover:bg-surface-hover transition-colors"

@@ -2,14 +2,12 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Transaction, Budget, GlobalBudget, ExpenseCategory } from "@/types";
 
-// ── Helpers ──────────────────────────────────────────────
 const uid = () => crypto.randomUUID();
 const toMonth = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
 const toISO = (d: Date) => d.toISOString().slice(0, 10);
 
-// ── Seed data ────────────────────────────────────────────
 function buildSeedTransactions(): Transaction[] {
   const now = new Date();
   const m = (offset: number) => {
@@ -23,7 +21,6 @@ function buildSeedTransactions(): Transaction[] {
   };
 
   return [
-    // Current month
     {
       id: uid(),
       type: "income",
@@ -56,7 +53,6 @@ function buildSeedTransactions(): Transaction[] {
       description: "Fuel",
       date: date(0, 3),
     },
-    // Last month
     {
       id: uid(),
       type: "income",
@@ -89,7 +85,6 @@ function buildSeedTransactions(): Transaction[] {
       description: "Restaurants & groceries",
       date: date(-1, 10),
     },
-    // 2 months ago
     {
       id: uid(),
       type: "income",
@@ -122,7 +117,6 @@ function buildSeedTransactions(): Transaction[] {
       description: "Streaming subscriptions",
       date: date(-2, 8),
     },
-    // 3 months ago
     {
       id: uid(),
       type: "income",
@@ -176,8 +170,6 @@ function buildSeedBudgets(): Budget[] {
   ];
 }
 
-// ── Store types ──────────────────────────────────────────
-
 interface TransactionSlice {
   transactions: Transaction[];
   addTransaction: (data: Omit<Transaction, "id">) => Transaction;
@@ -193,15 +185,12 @@ interface BudgetSlice {
 
 export type StoreState = TransactionSlice & BudgetSlice;
 
-// ── Store ────────────────────────────────────────────────
-
 const SEED_TRANSACTIONS = buildSeedTransactions();
 const SEED_BUDGETS = buildSeedBudgets();
 
 export const useStore = create<StoreState>()(
   persist(
     (set) => ({
-      // ── Transactions slice ──
       transactions: SEED_TRANSACTIONS,
 
       addTransaction: (data) => {
@@ -217,7 +206,6 @@ export const useStore = create<StoreState>()(
           transactions: state.transactions.filter((t) => t.id !== id),
         })),
 
-      // ── Budgets slice ──
       budgets: SEED_BUDGETS,
 
       setBudget: (category, limit, month) =>
@@ -249,7 +237,7 @@ export const useStore = create<StoreState>()(
         }),
     }),
     {
-      name: "finance-tracker",
+      name: "finance-snapshot",
       version: 1,
     },
   ),
