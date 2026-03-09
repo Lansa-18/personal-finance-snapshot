@@ -1,17 +1,18 @@
-import { useState, useMemo } from "react";
-import { useStore } from "@/store/useStore";
+import BudgetCard from "@/components/BudgetCard";
+import OverviewCard from "@/components/OverviewCard";
 import {
-  EXPENSE_CATEGORIES,
-  CATEGORY_COLORS,
-  CATEGORY_ICONS,
+  EXPENSE_CATEGORIES
 } from "@/constants/categories";
-import { currentMonth, formatCurrency, getMonthOptions } from "@/lib/utils";
-import type { ExpenseCategory } from "@/types";
+import { currentMonth, getMonthOptions } from "@/lib/utils";
+import { useStore } from "@/store/useStore";
+import { useMemo, useState } from "react";
 
 export default function Budgets() {
   const transactions = useStore((s) => s.transactions);
   const budgets = useStore((s) => s.budgets);
   const setBudget = useStore((s) => s.setBudget);
+  const globalBudgets = useStore((s) => s.globalBudgets);
+  const setGlobalBudget = useStore((s) => s.setGlobalBudget);
   const [selectedMonth, setSelectedMonth] = useState(currentMonth());
 
   // ── Spending per category for selected month ──
@@ -42,15 +43,22 @@ export default function Budgets() {
     return map;
   }, [budgets, selectedMonth]);
 
+  // ── Global budget for selected month ──
+  const globalBudgetLimit = useMemo(() => {
+    const found = globalBudgets.find((b) => b.month === selectedMonth);
+    return found?.limit ?? null;
+  }, [globalBudgets, selectedMonth]);
+
   // ── Total budget vs total spent ──
   const totals = useMemo(() => {
-    const totalBudget = EXPENSE_CATEGORIES.reduce(
+    const categorySum = EXPENSE_CATEGORIES.reduce(
       (s, c) => s + budgetMap[c],
       0,
     );
+    const totalBudget = globalBudgetLimit ?? categorySum;
     const totalSpent = EXPENSE_CATEGORIES.reduce((s, c) => s + spending[c], 0);
     return { totalBudget, totalSpent };
-  }, [budgetMap, spending]);
+  }, [budgetMap, spending, globalBudgetLimit]);
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -78,18 +86,13 @@ export default function Budgets() {
       </div>
 
       {/* Overview card */}
-      <div className="bg-surface rounded-xl border border-border p-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-text-primary">
-            Monthly Overview
-          </h3>
-          <p className="text-sm text-text-secondary">
-            {formatCurrency(totals.totalSpent)} of{" "}
-            {formatCurrency(totals.totalBudget)}
-          </p>
-        </div>
-        <ProgressBar spent={totals.totalSpent} limit={totals.totalBudget} />
-      </div>
+      <OverviewCard
+        spent={totals.totalSpent}
+        globalLimit={globalBudgetLimit}
+        categorySum={EXPENSE_CATEGORIES.reduce((s, c) => s + budgetMap[c], 0)}
+        onSetLimit={(limit) => setGlobalBudget(limit, selectedMonth)}
+        onClear={() => setGlobalBudget(0, selectedMonth)}
+      />
 
       {/* Category cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -107,166 +110,3 @@ export default function Budgets() {
   );
 }
 
-// ── Budget Card Component ──
-
-function BudgetCard({
-  category,
-  spent,
-  limit,
-  onSetLimit,
-}: {
-  category: ExpenseCategory;
-  spent: number;
-  limit: number;
-  onSetLimit: (limit: number) => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [inputValue, setInputValue] = useState(String(limit));
-
-  const handleSave = () => {
-    const val = parseFloat(inputValue);
-    if (!isNaN(val) && val >= 0) {
-      onSetLimit(val);
-    }
-    setEditing(false);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSave();
-    if (e.key === "Escape") {
-      setInputValue(String(limit));
-      setEditing(false);
-    }
-  };
-
-  const color = CATEGORY_COLORS[category];
-  const noBudget = limit === 0;
-
-  return (
-    <div className="bg-surface rounded-xl border border-border p-5 hover:shadow-md transition-shadow duration-200">
-      {/* Category header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{ backgroundColor: color }}
-          />
-          <span className="text-lg">{CATEGORY_ICONS[category]}</span>
-          <h3 className="text-sm font-semibold text-text-primary">
-            {category}
-          </h3>
-        </div>
-        <div className="flex items-center gap-1">
-          {editing ? (
-            <div className="flex items-center gap-1">
-              <span className="text-sm text-text-muted">$</span>
-              <input
-                type="number"
-                min="0"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onBlur={handleSave}
-                onKeyDown={handleKeyDown}
-                autoFocus
-                className="w-20 px-2 py-1 text-sm rounded border border-border bg-surface text-text-primary
-                           focus:outline-none focus:ring-2 focus:ring-income/30 focus:border-income"
-              />
-            </div>
-          ) : (
-            <button
-              onClick={() => {
-                setInputValue(String(limit));
-                setEditing(true);
-              }}
-              className="text-sm text-text-secondary hover:text-text-primary transition-colors"
-              title="Click to edit budget"
-            >
-              {noBudget ? "Set limit" : `Limit: ${formatCurrency(limit)}`}
-            </button>
-          )}
-        </div>
-      </div>
-
-      {noBudget ? (
-        // No budget state
-        <div className="text-center py-4">
-          <p className="text-sm text-text-muted mb-3">
-            No budget set for this category
-          </p>
-          <button
-            onClick={() => {
-              setInputValue("500");
-              setEditing(true);
-            }}
-            className="text-sm text-income hover:underline font-medium"
-          >
-            + Set a budget limit
-          </button>
-          {spent > 0 && (
-            <p className="text-xs text-text-muted mt-2">
-              Current spending: {formatCurrency(spent)}
-            </p>
-          )}
-        </div>
-      ) : (
-        <>
-          {/* Spending info */}
-          <div className="flex items-baseline justify-between mb-2">
-            <p className="text-sm text-text-secondary">
-              {formatCurrency(spent)} spent
-            </p>
-            <p className="text-xs text-text-muted">
-              {formatCurrency(Math.max(0, limit - spent))} remaining
-            </p>
-          </div>
-
-          {/* Progress bar */}
-          <ProgressBar spent={spent} limit={limit} color={color} />
-
-          {/* Over budget warning */}
-          {spent > limit && (
-            <p className="text-xs text-danger font-medium mt-2 flex items-center gap-1">
-              ⚠️ Over budget by {formatCurrency(spent - limit)}
-            </p>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-// ── Progress Bar Component ──
-
-function ProgressBar({
-  spent,
-  limit,
-  color,
-}: {
-  spent: number;
-  limit: number;
-  color?: string;
-}) {
-  if (limit === 0) return null;
-
-  const pct = Math.min((spent / limit) * 100, 100);
-  const overBudget = spent > limit;
-  const isWarning = pct >= 75 && pct < 100;
-
-  const barColor = overBudget
-    ? "#ef4444" // red
-    : isWarning
-      ? "#f59e0b" // amber
-      : (color ?? "#22c55e"); // green or category color
-
-  return (
-    <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden">
-      <div
-        className="h-full rounded-full animate-progress transition-all duration-500"
-        style={{
-          width: `${Math.min(pct, 100)}%`,
-          backgroundColor: barColor,
-        }}
-      />
-    </div>
-  );
-}

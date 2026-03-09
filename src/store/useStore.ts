@@ -1,20 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { Transaction, Budget, ExpenseCategory } from "@/types";
+import type { Transaction, Budget, GlobalBudget, ExpenseCategory } from "@/types";
 
 // ── Helpers ──────────────────────────────────────────────
-
 const uid = () => crypto.randomUUID();
-
-/** Return 'YYYY-MM' for a Date */
 const toMonth = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 
-/** Return 'YYYY-MM-DD' for a Date */
 const toISO = (d: Date) => d.toISOString().slice(0, 10);
 
 // ── Seed data ────────────────────────────────────────────
-
 function buildSeedTransactions(): Transaction[] {
   const now = new Date();
   const m = (offset: number) => {
@@ -192,6 +187,8 @@ interface TransactionSlice {
 interface BudgetSlice {
   budgets: Budget[];
   setBudget: (category: ExpenseCategory, limit: number, month: string) => void;
+  globalBudgets: GlobalBudget[];
+  setGlobalBudget: (limit: number, month: string) => void;
 }
 
 export type StoreState = TransactionSlice & BudgetSlice;
@@ -235,6 +232,21 @@ export const useStore = create<StoreState>()(
           }
           return { budgets: [...state.budgets, { category, limit, month }] };
         }),
+
+      globalBudgets: [],
+
+      setGlobalBudget: (limit, month) =>
+        set((state) => {
+          const exists = state.globalBudgets.findIndex(
+            (b) => b.month === month,
+          );
+          if (exists >= 0) {
+            const updated = [...state.globalBudgets];
+            updated[exists] = { month, limit };
+            return { globalBudgets: updated };
+          }
+          return { globalBudgets: [...state.globalBudgets, { month, limit }] };
+        }),
     }),
     {
       name: "finance-tracker",
@@ -242,8 +254,6 @@ export const useStore = create<StoreState>()(
     },
   ),
 );
-
-// ── Selectors (memoizable) ──────────────────────────────
 
 export const selectTransactions = (s: StoreState) => s.transactions;
 export const selectBudgets = (s: StoreState) => s.budgets;

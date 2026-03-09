@@ -28,6 +28,7 @@ import {
   getMonthOptions,
 } from "@/lib/utils";
 import AddTransactionModal from "@/components/AddTransactionModal";
+import EmptyState from "@/components/EmptyState";
 import type { Category } from "@/types";
 
 export default function Dashboard() {
@@ -156,7 +157,12 @@ export default function Dashboard() {
       </div>
 
       {isEmpty ? (
-        <EmptyState onAdd={() => setModalOpen(true)} />
+        <EmptyState
+          onAdd={() => setModalOpen(true)}
+          icon="📊"
+          title="No data yet"
+          description="Start tracking your finances by adding your first transaction."
+        />
       ) : (
         <>
           {/* Summary cards */}
@@ -275,7 +281,9 @@ export default function Dashboard() {
                           y={y}
                           textAnchor={textAnchor}
                           fontSize={10}
-                          fill={CATEGORY_COLORS[(name as Category) ?? ""] ?? "#666"}
+                          fill={
+                            CATEGORY_COLORS[(name as Category) ?? ""] ?? "#666"
+                          }
                         >
                           {`${name ?? ""} ${((percent ?? 0) * 100).toFixed(0)}%`}
                         </text>
@@ -317,9 +325,9 @@ export default function Dashboard() {
                   key={t.id}
                   className="flex items-center justify-between px-5 py-3.5 hover:bg-surface-hover transition-colors"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <span
-                      className={`text-xs px-2 py-1 rounded-full font-medium ${CATEGORY_BG_COLORS[t.category]}`}
+                      className={`text-xs px-2.5 py-1 rounded-full font-medium inline-flex items-center justify-center gap-1 w-32 shrink-0 ${CATEGORY_BG_COLORS[t.category]}`}
                     >
                       {CATEGORY_ICONS[t.category]} {t.category}
                     </span>
@@ -349,26 +357,6 @@ export default function Dashboard() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
       />
-    </div>
-  );
-}
-
-function EmptyState({ onAdd }: { onAdd: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
-      <div className="text-6xl mb-4">📊</div>
-      <h2 className="text-xl font-semibold text-text-primary mb-2">
-        No data yet
-      </h2>
-      <p className="text-sm text-text-secondary mb-6 text-center max-w-sm">
-        Start tracking your finances by adding your first transaction.
-      </p>
-      <button
-        onClick={onAdd}
-        className="px-6 py-2.5 rounded-lg bg-income text-white font-medium hover:bg-emerald-600 transition-all shadow-sm"
-      >
-        + Add Your First Transaction
-      </button>
     </div>
   );
 }

@@ -8,6 +8,8 @@ import {
 import { formatDate, formatCurrency, getMonthOptions } from "@/lib/utils";
 import AddTransactionModal from "@/components/AddTransactionModal";
 import type { Category, TransactionType } from "@/types";
+import EmptyState from "@/components/EmptyState";
+import { Trash2 } from "lucide-react";
 
 export default function Transactions() {
   const transactions = useStore((s) => s.transactions);
@@ -17,8 +19,6 @@ export default function Transactions() {
   const [filterCategory, setFilterCategory] = useState<Category | "all">("all");
   const [filterType, setFilterType] = useState<TransactionType | "all">("all");
   const [filterMonth, setFilterMonth] = useState<string>("all");
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
-
   const filtered = useMemo(() => {
     return [...transactions]
       .filter((t) => filterCategory === "all" || t.category === filterCategory)
@@ -27,15 +27,7 @@ export default function Transactions() {
       .sort((a, b) => b.date.localeCompare(a.date));
   }, [transactions, filterCategory, filterType, filterMonth]);
 
-  const handleDelete = (id: string) => {
-    if (deleteConfirm === id) {
-      deleteTransaction(id);
-      setDeleteConfirm(null);
-    } else {
-      setDeleteConfirm(id);
-      setTimeout(() => setDeleteConfirm(null), 3000);
-    }
-  };
+  const handleDelete = (id: string) => deleteTransaction(id);
 
   const isEmpty = transactions.length === 0;
 
@@ -125,12 +117,12 @@ export default function Transactions() {
           {/* Transaction list */}
           <div className="bg-surface rounded-xl border border-border overflow-hidden">
             {/* Table header (desktop) */}
-            <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_auto_auto_auto] gap-4 px-5 py-3 bg-surface-dim border-b border-border text-xs font-semibold text-text-muted uppercase tracking-wider">
+            <div className="hidden sm:grid sm:grid-cols-[1fr_9rem_9rem_7rem_5rem] gap-4 px-5 py-3 bg-surface-dim border-b border-border text-xs font-semibold text-text-muted uppercase tracking-wider">
               <span>Description</span>
               <span>Category</span>
               <span className="text-right">Date</span>
               <span className="text-right">Amount</span>
-              <span className="w-10"></span>
+              <span></span>
             </div>
 
             {filtered.length === 0 ? (
@@ -142,7 +134,7 @@ export default function Transactions() {
                 {filtered.map((t) => (
                   <div
                     key={t.id}
-                    className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_auto_auto_auto] gap-2 sm:gap-4 px-5 py-3.5
+                    className="flex flex-col sm:grid sm:grid-cols-[1fr_9rem_9rem_7rem_5rem] gap-2 sm:gap-4 px-5 py-3.5
                                hover:bg-surface-hover transition-colors group"
                   >
                     {/* Description */}
@@ -183,13 +175,10 @@ export default function Transactions() {
                     <div className="flex items-center justify-end">
                       <button
                         onClick={() => handleDelete(t.id)}
-                        className={`text-xs px-2 py-1 rounded-md transition-all ${
-                          deleteConfirm === t.id
-                            ? "bg-red-500 text-white"
-                            : "text-text-muted hover:text-danger hover:bg-red-50 opacity-0 group-hover:opacity-100"
-                        }`}
+                        title="Delete transaction"
+                        className="p-1.5 rounded-md transition-all text-text-muted hover:text-red-500 hover:bg-red-50"
                       >
-                        {deleteConfirm === t.id ? "Confirm?" : "Delete"}
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </div>
@@ -208,22 +197,4 @@ export default function Transactions() {
   );
 }
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
-      <div className="text-6xl mb-4">💳</div>
-      <h2 className="text-xl font-semibold text-text-primary mb-2">
-        No transactions yet
-      </h2>
-      <p className="text-sm text-text-secondary mb-6 text-center max-w-sm">
-        Add your first transaction to start tracking where your money goes.
-      </p>
-      <button
-        onClick={onAdd}
-        className="px-6 py-2.5 rounded-lg bg-income text-white font-medium hover:bg-emerald-600 transition-all shadow-sm"
-      >
-        + Add Your First Transaction
-      </button>
-    </div>
-  );
-}
+

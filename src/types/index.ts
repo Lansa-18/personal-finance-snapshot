@@ -23,3 +23,8 @@ export interface Budget {
   limit: number;
   month: string; // YYYY-MM
 }
+
+export interface GlobalBudget {
+  month: string; // YYYY-MM
+  limit: number;
+}
